@@ -1,0 +1,67 @@
+{
+  "entities": {
+    "Personality": {
+      "title": "Personality",
+      "description": "A custom AI personality created by a user.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "systemInstruction": { "type": "string" },
+        "voice": { "type": "string" },
+        "speechStyle": { "type": "string" },
+        "isDefault": { "type": "boolean" },
+        "uid": { "type": "string", "description": "The UID of the user who owns this personality." }
+      },
+      "required": ["id", "name", "systemInstruction", "voice", "isDefault", "uid"]
+    },
+    "User": {
+      "title": "User",
+      "description": "A user profile record.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "lastLogin": { "type": "string", "format": "date-time" },
+        "role": { "type": "string", "enum": ["admin", "user"] }
+      },
+      "required": ["uid", "email", "lastLogin"]
+    },
+    "AppSettings": {
+      "title": "App Settings",
+      "description": "Global settings for the application",
+      "type": "object",
+      "properties": {
+        "personalityId": { "type": "string" },
+        "logToSheets": { "type": "boolean" },
+        "spreadsheetId": { "type": "string" },
+        "googleTokens": {
+          "type": "object",
+          "properties": {
+            "access_token": { "type": "string" },
+            "refresh_token": { "type": "string" },
+            "expiry_date": { "type": "number" }
+          }
+        }
+      },
+      "required": ["personalityId", "logToSheets", "spreadsheetId"]
+    }
+  },
+  "firestore": {
+    "/personalities/{personalityId}": {
+      "schema": "Personality",
+      "description": "Collection of custom personalities."
+    },
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profile records."
+    },
+    "/settings/global": {
+      "schema": "AppSettings",
+      "description": "Global application settings."
+    }
+  }
+}

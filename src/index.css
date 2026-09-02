@@ -1,0 +1,94 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+:root {
+  --bg-color: #050505;
+  --text-color: #ffffff;
+  --accent-color: #00f2ff;
+  --accent-glow: rgba(0, 242, 255, 0.3);
+  --card-bg: #0a0a0a;
+  --card-border: rgba(0, 242, 255, 0.2);
+  --secondary-text: rgba(255, 255, 255, 0.5);
+}
+
+:root.light {
+  --bg-color: #ffffff;
+  --text-color: #000000;
+  --accent-color: #0088ff;
+  --accent-glow: rgba(0, 136, 255, 0.15);
+  --card-bg: #f5f5f5;
+  --card-border: rgba(0, 0, 0, 0.1);
+  --secondary-text: rgba(0, 0, 0, 0.6);
+}
+
+body {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  overflow: hidden;
+  font-family: var(--font-mono);
+  transition: background-color 0.2s ease, color 0.2s ease;
+  overscroll-behavior: none;
+  touch-action: manipulation;
+  -webkit-text-size-adjust: 100%;
+}
+
+/* Scanline effect */
+body::before {
+  content: " ";
+  display: block;
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  background: linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+  z-index: 100;
+  background-size: 3px 100%;
+  pointer-events: none;
+  opacity: 0.3;
+}
+
+/* Grid background */
+.grid-bg {
+  background-image: 
+    linear-gradient(var(--card-border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--card-border) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.5; border-color: var(--card-border); }
+  50% { opacity: 1; border-color: var(--accent-color); }
+}
+
+.hack-border {
+  border: 1px solid var(--card-border);
+  position: relative;
+}
+
+.hack-border::before {
+  content: "";
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  width: 10px;
+  height: 10px;
+  border-top: 2px solid var(--accent-color);
+  border-left: 2px solid var(--accent-color);
+}
+
+.hack-border::after {
+  content: "";
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 10px;
+  height: 10px;
+  border-bottom: 2px solid var(--accent-color);
+  border-right: 2px solid var(--accent-color);
+}

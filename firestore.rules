@@ -1,0 +1,99 @@
+rules_version = '2';
+
+// ===============================================================
+// Assumed Data Model
+// ===============================================================
+//
+// Collection: users
+// Document ID: {userId} (UID)
+// Fields:
+//   - uid: string (required)
+//   - email: string (required)
+//   - displayName: string (optional)
+//   - photoURL: string (optional)
+//   - lastLogin: string (required, ISO 8601)
+//   - role: string (optional, 'admin' | 'user')
+//
+// Collection: personalities
+// Document ID: {personalityId}
+// Fields:
+//   - id: string (required)
+//   - name: string (required, 1-100 chars)
+//   - description: string (optional, < 500 chars)
+//   - systemInstruction: string (required, 1-5000 chars)
+//   - voice: string (required)
+//   - speechStyle: string (optional)
+//   - isDefault: bool (required)
+//   - uid: string (required, owner UID)
+//
+// Collection: settings
+// Document ID: global
+// Fields:
+//   - personalityId: string (required)
+//   - logToSheets: bool (required)
+//   - spreadsheetId: string (required)
+//   - googleTokens: map (optional)
+//
+// ===============================================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper Functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(uid) {
+      return isAuthenticated() && request.auth.uid == uid;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && 
+        ((request.auth.token.email == "hnnschools@gmail.com" && request.auth.token.email_verified == true) || 
+         (request.auth.token.email == "porter.groupdonovan@gmail.com" && request.auth.token.email_verified == true) ||
+         (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+          'role' in get(/databases/$(database)/documents/users/$(request.auth.uid)).data &&
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'));
+    }
+
+    function isValidPersonality(data) {
+      return data.name is string && data.name.size() > 0 && data.name.size() < 100 &&
+             (!('description' in data) || (data.description is string && data.description.size() < 500)) &&
+             data.systemInstruction is string && data.systemInstruction.size() > 0 && data.systemInstruction.size() < 5000 &&
+             data.voice is string &&
+             data.isDefault is bool &&
+             data.uid == request.auth.uid;
+    }
+
+    function isValidUser(data) {
+      return data.uid is string &&
+             data.email is string &&
+             data.lastLogin is string;
+    }
+
+    match /_connection_test_/{docId} {
+      allow read: if true;
+    }
+
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isOwner(userId) && isValidUser(request.resource.data) && (!('role' in request.resource.data) || request.resource.data.role == 'user');
+      allow update: if (isOwner(userId) && isValidUser(request.resource.data) && (!('role' in request.resource.data) || request.resource.data.role == resource.data.role)) || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    match /personalities/{personalityId} {
+      allow read: if isAuthenticated() && (isOwner(resource.data.uid) || isAdmin());
+      allow create: if isAuthenticated() && isValidPersonality(request.resource.data);
+      allow update: if isOwner(resource.data.uid) && 
+                      isValidPersonality(request.resource.data) &&
+                      request.resource.data.uid == resource.data.uid;
+      allow delete: if isOwner(resource.data.uid) || isAdmin();
+    }
+
+    match /settings/global {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+  }
+}

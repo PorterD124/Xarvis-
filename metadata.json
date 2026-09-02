@@ -1,0 +1,8 @@
+{
+  "name": "Xarvis",
+  "description": "A real-time AI assistant powered by Gemini Live API, featuring low-latency voice interaction.",
+  "requestFramePermissions": [
+    "microphone",
+    "bluetooth"
+  ]
+}
